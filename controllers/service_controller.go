@@ -128,7 +128,17 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		AutonegConfig: status.config,
 		NEGStatus:     status.negStatus,
 	}
-	logger.Info("Existing status", "status", fmt.Sprintf("%+v", status))
+	// config/negConfig/negStatus reflect the Service's current annotations,
+	// while status/syncConfig are what was last persisted to the
+	// autoneg-status annotation - i.e. what's about to be compared against
+	// intendedStatus below.
+	logger.Info("Existing status",
+		"config", status.config,
+		"negConfig", status.negConfig,
+		"status", status.status,
+		"negStatus", status.negStatus,
+		"syncConfig", status.syncConfig,
+	)
 	if status.syncConfig != nil {
 		intendedStatus.AutonegSyncConfig = status.syncConfig
 	}

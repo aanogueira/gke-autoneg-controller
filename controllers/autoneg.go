@@ -467,7 +467,7 @@ func ReconcileStatus(logger logr.Logger, project string, actual AutonegStatus, i
 	upserts = make(map[string]map[string]Backends, 0)
 	removes = make(map[string]map[string]Backends, 0)
 
-	logger.V(1).Info("Reconciling statuses", "actual", fmt.Sprintf("%+v", actual), "intended", fmt.Sprintf("%+v", intended))
+	logger.V(1).Info("Reconciling statuses", "actual", actual, "intended", intended)
 
 	// transform into maps with backend group as key
 	actualBE := map[string]map[string]struct{}{}

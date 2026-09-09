@@ -74,6 +74,7 @@ type AutonegNEGConfig struct {
 	CustomMetrics   []AutonegCustomMetric `json:"custom_metrics,omitempty"`
 	InitialCapacity *StringOrInt          `json:"initial_capacity,omitempty"`
 	CapacityScaler  *StringOrInt          `json:"capacity_scaler,omitempty"`
+	Preference      string                `json:"preference,omitempty"`
 }
 
 // AutonegSyncConfig specifies additional configuration which to sync

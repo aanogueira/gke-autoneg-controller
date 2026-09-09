@@ -112,6 +112,7 @@ func (s AutonegStatus) Backend(name string, port string, group string) compute.B
 				}
 			}),
 			CapacityScaler: capacityScaler,
+			Preference:     cfg.Preference,
 		}
 	} else if cfg.Rate > 0 {
 		return compute.Backend{
@@ -119,6 +120,7 @@ func (s AutonegStatus) Backend(name string, port string, group string) compute.B
 			BalancingMode:      "RATE",
 			MaxRatePerEndpoint: float64(cfg.Rate),
 			CapacityScaler:     capacityScaler,
+			Preference:         cfg.Preference,
 		}
 	} else {
 		return compute.Backend{
@@ -126,6 +128,7 @@ func (s AutonegStatus) Backend(name string, port string, group string) compute.B
 			BalancingMode:             "CONNECTION",
 			MaxConnectionsPerEndpoint: int64(cfg.Connections),
 			CapacityScaler:            capacityScaler,
+			Preference:                cfg.Preference,
 		}
 	}
 }
@@ -617,6 +620,10 @@ func validateConfig(config AutonegConfig) error {
 				if !hasDryRun && len(cfg.CustomMetrics) > 2 {
 					return fmt.Errorf("too many custom_metrics for backend %q must be at most 2, but was %q; see https://docs.cloud.google.com/load-balancing/docs/https/applb-custom-metrics#metrics-limits-requirements for details", cfg.Name, len(cfg.CustomMetrics))
 				}
+			}
+
+			if cfg.Preference != "" && cfg.Preference != "DEFAULT" && cfg.Preference != "PREFERRED" {
+				return fmt.Errorf("preference for backend %q must be DEFAULT or PREFERRED, but was %q", cfg.Name, cfg.Preference)
 			}
 		}
 	}

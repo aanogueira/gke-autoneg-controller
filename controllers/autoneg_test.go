@@ -393,6 +393,7 @@ func TestValidateNewConfig(t *testing.T) {
 		err                    bool
 		expectedCapacityScaler float64
 		expectedBalancingMode  string
+		expectedPreference     string
 	}{
 		{
 			name:                   "default config",
@@ -606,6 +607,60 @@ func TestValidateNewConfig(t *testing.T) {
 			expectedCapacityScaler: 0.42,
 			expectedBalancingMode:  "CUSTOM_METRICS",
 		},
+		{
+			name: "valid preference PREFERRED",
+			config: AutonegConfig{
+				BackendServices: map[string]map[string]AutonegNEGConfig{
+					"80": {
+						"http-be": {
+							Name:       "http-be",
+							Rate:       100,
+							Preference: "PREFERRED",
+						},
+					},
+				},
+			},
+			err:                    false,
+			expectedCapacityScaler: 1,
+			expectedBalancingMode:  "RATE",
+			expectedPreference:     "PREFERRED",
+		},
+		{
+			name: "valid preference DEFAULT",
+			config: AutonegConfig{
+				BackendServices: map[string]map[string]AutonegNEGConfig{
+					"80": {
+						"http-be": {
+							Name:       "http-be",
+							Rate:       100,
+							Preference: "DEFAULT",
+						},
+					},
+				},
+			},
+			err:                    false,
+			expectedCapacityScaler: 1,
+			expectedBalancingMode:  "RATE",
+			expectedPreference:     "DEFAULT",
+		},
+		{
+			name: "invalid preference",
+			config: AutonegConfig{
+				BackendServices: map[string]map[string]AutonegNEGConfig{
+					"80": {
+						"http-be": {
+							Name:       "http-be",
+							Rate:       100,
+							Preference: "INVALID",
+						},
+					},
+				},
+			},
+			err:                    true,
+			expectedCapacityScaler: 1,
+			expectedBalancingMode:  "RATE",
+			expectedPreference:     "INVALID",
+		},
 	}
 
 	for _, ct := range tests {
@@ -633,6 +688,10 @@ func TestValidateNewConfig(t *testing.T) {
 		if beConfig.BalancingMode != ct.expectedBalancingMode {
 			t.Errorf("Set %q: expected balacing mode %q, got: %q", ct.name, ct.expectedBalancingMode, beConfig.BalancingMode)
 		}
+
+		if beConfig.Preference != ct.expectedPreference {
+			t.Errorf("Set %q: expected preference %q, got: %q", ct.name, ct.expectedPreference, beConfig.Preference)
+		}
 	}
 }
 
@@ -641,6 +700,7 @@ func relevantCopy(a compute.Backend) compute.Backend {
 	b.Group = a.Group
 	b.MaxRatePerEndpoint = a.MaxRatePerEndpoint
 	b.MaxConnectionsPerEndpoint = a.MaxConnectionsPerEndpoint
+	b.Preference = a.Preference
 	if len(a.CustomMetrics) > 0 {
 		b.CustomMetrics = slices.Collect(func(yield func(*compute.BackendCustomMetric) bool) {
 			for _, acm := range a.CustomMetrics {
